@@ -170,10 +170,12 @@ impl Gen {
                 let op = ["<", "<=", ">", ">=", "==", "~="][self.r.below(6) as usize];
                 let a = self.expr(ty, 2);
                 let mut b = self.expr(ty, 1);
-                if b == "0" && matches!(ty, "u8" | "u16") && matches!(op, "<" | ">=") {
+                // The checker rejects comparisons with 0 that are always false or true, and
+                // expressions of literals alone default to unsigned types.
+                if b == "0" && matches!(op, "<" | ">=") {
                     b = "1".into(); // the checker rejects comparisons that are always false
                 }
-                if a == "0" && matches!(ty, "u8" | "u16") && matches!(op, ">" | "<=") {
+                if a == "0" && matches!(op, ">" | "<=") {
                     return format!("({b} {op} 1)");
                 }
                 format!("({a} {op} {b})")
