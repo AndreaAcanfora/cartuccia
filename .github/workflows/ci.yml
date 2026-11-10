@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch: # run (and deploy) by hand from the Actions tab
+
+permissions:
+  contents: read
+
+env:
+  # The emulator the tests and the playground use: github.com/AndreaAcanfora/mattone
+  MATTONE_COMMIT: 2ddf387b41b8d1ecdc86fef80e70925b52209237
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - name: Build mattone-run, the emulator the tests run ROMs on
+        run: |
+          git clone --quiet https://github.com/AndreaAcanfora/mattone "$RUNNER_TEMP/mattone"
+          git -C "$RUNNER_TEMP/mattone" checkout --quiet "$MATTONE_COMMIT"
+          make -C "$RUNNER_TEMP/mattone" build/mattone-run
+          echo "MATTONE_RUN=$RUNNER_TEMP/mattone/build/mattone-run" >> "$GITHUB_ENV"
+      - name: Tests, and differential fuzzing against the interpreter and the Game Boy
+        run: cargo test --release -- --nocapture
+        env:
+          FUZZ_N: 5000
+          FUZZ_EMU_N: 400
+      - name: Compile the examples
+        run: |
+          for f in examples/*.cart; do
+            cargo run --quiet --release -- "$f" --stats | head -1 | sed "s|^|$f: |" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Build mattone.wasm
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # wasi-sdk-34.0-x86_64-linux.tar.gz, through the API (release download URLs time out on runners)
+          curl -fsSL --retry 6 --retry-delay 10 -H "Accept: application/octet-stream" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" -o wasi-sdk.tar.gz \
+            https://api.github.com/repos/WebAssembly/wasi-sdk/releases/assets/528366474
+          echo "b761e3a0721dbae9c09a0059e5fdb2bf917d1b4a8a7b430fb3b5aafb0984b2c4  wasi-sdk.tar.gz" | sha256sum -c
+          mkdir -p "$RUNNER_TEMP/wasi-sdk"
+          tar xzf wasi-sdk.tar.gz -C "$RUNNER_TEMP/wasi-sdk" --strip-components=1
+          rm wasi-sdk.tar.gz
+          git clone --quiet https://github.com/AndreaAcanfora/mattone "$RUNNER_TEMP/mattone"
+          git -C "$RUNNER_TEMP/mattone" checkout --quiet "$MATTONE_COMMIT"
+          WASI_SDK="$RUNNER_TEMP/wasi-sdk" sh "$RUNNER_TEMP/mattone/scripts/build-web.sh"
+          echo "MATTONE_WASM=$RUNNER_TEMP/mattone/web/mattone.wasm" >> "$GITHUB_ENV"
+      - name: Build the playground
+        run: scripts/build-web.sh | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: The compiler module needs nothing from the browser
+        run: |
+          node -e "
+            const m = new WebAssembly.Module(require('fs').readFileSync('web/cartuccia.wasm'));
+            const imports = WebAssembly.Module.imports(m);
+            if (imports.length) { console.error('unexpected imports', imports); process.exit(1); }
+          "
+      - name: Every example compiles and runs in the two modules
+        run: node tests/wasm-smoke.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: web
+
+  deploy:
+    # Publishes the playground to GitHub Pages from the default branch.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: [test, web]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4

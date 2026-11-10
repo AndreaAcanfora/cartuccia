@@ -272,7 +272,7 @@ main {
 
 #focus-hint {
   position: absolute;
-  bottom: 22px;
+  bottom: 1px;
   left: 50%;
   transform: translateX(-50%);
   background: rgb(0 0 0 / 0.65);
@@ -523,10 +523,19 @@ th { color: var(--muted); font-weight: 500; }
 }
 
 @media (max-width: 900px) {
+  html, body { height: auto; }
   main {
+    flex: none;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
+  #side { display: contents; }
+  #highlight, #source { padding-bottom: 3em; }
+  #gutter { padding-bottom: 3em; }
+  #console { order: 1; }
+  #code { order: 2; }
+  #tabs { order: 3; }
+  #panels { order: 4; }
   #code { border-right: none; border-top: 1px solid var(--line); }
   #editor { min-height: 60vh; }
   #side { overflow: visible; }
