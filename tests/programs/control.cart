@@ -1,0 +1,51 @@
+-- loops, branches, comparisons
+var total: u16 = 0
+
+function classify(v: i16): u8
+  if v < -100 then
+    return 0
+  elseif v < 0 then
+    return 1
+  elseif v == 0 then
+    return 2
+  elseif v <= 100 then
+    return 3
+  end
+  return 4
+end
+
+function _init()
+  for i = 0, 255 do
+    total += i
+  end
+  debug(total)
+  for i = 10, 0, -3 do
+    debug(i)
+  end
+  local n = 0
+  while true do
+    n += 1
+    if n > 40 and n % 7 == 0 then break end
+  end
+  debug(n)
+  debug(classify(-500))
+  debug(classify(-5))
+  debug(classify(0))
+  debug(classify(100))
+  debug(classify(101))
+  local a: u8 = 5
+  local b: u8 = 250
+  debug(a < b)
+  debug(a > b)
+  debug(a <= 5)
+  debug(b >= 251)
+  local c: i8 = -5
+  local d: i8 = 100
+  debug(c < d)
+  debug(c > d)
+  debug(not (c < d) or a == 5)
+  debug(min(a, b))
+  debug(max(c, d))
+  debug(abs(c))
+  stop()
+end

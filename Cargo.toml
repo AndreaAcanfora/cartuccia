@@ -1,0 +1,22 @@
+[package]
+name = "cartuccia"
+version = "0.1.0"
+edition = "2024"
+description = "A small Lua-flavoured language and an optimizing compiler for the Game Boy"
+license = "MIT"
+repository = "https://github.com/AndreaAcanfora/cartuccia"
+readme = "README.md"
+keywords = ["gameboy", "compiler", "sm83", "webassembly", "retro"]
+categories = ["compilers", "game-development", "wasm"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# No dependencies: lexer, parser, optimizer, assembler and runtime are all in this crate.
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

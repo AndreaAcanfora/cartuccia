@@ -1,0 +1,79 @@
+-- Music box. A plays the tune, B plays random notes.
+
+gfx key = [[
+3......3
+3......3
+3......3
+3......3
+3......3
+3......3
+3......3
+33333333
+]]
+
+gfx dot = [[
+..3333..
+.322223.
+32222223
+32222223
+32222223
+32222223
+.322223.
+..3333..
+]]
+
+-- Ode to Joy: notes from C3 (0), 12 per octave; 255 is a rest
+const tune: u8[] = {
+  28, 28, 29, 31, 31, 29, 28, 26, 24, 24, 26, 28, 28, 26, 26, 255,
+  28, 28, 29, 31, 31, 29, 28, 26, 24, 24, 26, 28, 26, 24, 24, 255
+}
+-- which key each note lights: C D E F G
+const keyof: u8[] = {0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6}
+
+var pos = 0
+var wait = 0
+var playing = false
+
+function show(note: u8)
+  if note == 255 then
+    hide(0)
+    return
+  end
+  local k = keyof[note % 12] + (note / 12 - 2) * 7
+  spr(0, 16 + k * 8, 80, dot)
+end
+
+function _init()
+  text(5, 2, "MUSIC BOX")
+  text(2, 14, "A: ODE TO JOY")
+  text(2, 15, "B: RANDOM NOTES")
+  for c = 2, 17 do
+    tile(c, 10, key)
+    tile(c, 11, key)
+  end
+end
+
+function _update()
+  if btnp(A) then
+    playing = true
+    pos = 0
+    wait = 0
+  end
+  if btnp(B) then
+    playing = false
+    local n = rnd(24) + 24
+    beep(n, 3)
+    show(n)
+  end
+  if playing then
+    if wait == 0 then
+      local n = tune[pos]
+      if n ~= 255 then beep(n, 3) end
+      show(n)
+      pos += 1
+      if pos == 32 then playing = false end
+      wait = 14
+    end
+    wait -= 1
+  end
+end

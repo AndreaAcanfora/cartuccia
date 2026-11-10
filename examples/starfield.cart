@@ -1,0 +1,70 @@
+-- Starfield. Fly with the arrows: 24 sprites, three speeds.
+
+gfx ship = [[
+...33...
+...33...
+..3223..
+..3223..
+.322223.
+32222223
+33.33.33
+3......3
+]]
+
+gfx far = [[
+........
+........
+........
+...1....
+........
+........
+........
+........
+]]
+
+gfx near = [[
+........
+........
+...2....
+..232...
+...2....
+........
+........
+........
+]]
+
+const STARS = 24
+
+var sx: u8[24]
+var sy: u8[24]
+var speed: u8[24]
+var shipx = 76
+var shipy = 120
+
+function _init()
+  text(5, 1, "STARFIELD")
+  for i = 0, STARS - 1 do
+    sx[i] = rnd(160)
+    sy[i] = rnd(144)
+    speed[i] = rnd(3) + 1
+  end
+end
+
+function _update()
+  for i = 0, STARS - 1 do
+    local y = sy[i] + speed[i]
+    if y >= 152 then
+      y = 0
+      sx[i] = rnd(160)
+    end
+    sy[i] = y
+    local t = far
+    if speed[i] == 3 then t = near end
+    spr(i + 1, sx[i], y, t)
+  end
+  if btn(LEFT) and shipx > 2 then shipx -= 2 end
+  if btn(RIGHT) and shipx < 150 then shipx += 2 end
+  if btn(UP) and shipy > 16 then shipy -= 2 end
+  if btn(DOWN) and shipy < 136 then shipy += 2 end
+  spr(0, shipx, shipy, ship)
+end

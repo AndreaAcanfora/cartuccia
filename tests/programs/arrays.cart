@@ -1,0 +1,50 @@
+-- arrays in RAM and ROM, globals, calls
+var grid: u8[64]
+var wide: i16[10]
+const primes: u8[] = {2, 3, 5, 7, 11, 13, 17, 19}
+const big: u16[] = {1000, 2000, 30000}
+var counter = 0
+var score: u16 = 0
+
+function bump(by: u8)
+  counter += by
+end
+
+function fib(n: u8): u16
+  local a: u16 = 0
+  local b: u16 = 1
+  for i = 1, n do
+    local t = a + b
+    a = b
+    b = t
+  end
+  return a
+end
+
+function _init()
+  for i = 0, 63 do
+    grid[i] = i * 3
+  end
+  local sum: u16 = 0
+  for i = 0, 63 do
+    sum += u16(grid[i])
+  end
+  debug(sum)
+  for i = 0, 9 do
+    wide[i] = i16(i) * -1000
+  end
+  debug(wide[7])
+  debug(primes[5] + primes[7])
+  debug(big[2] + big[0])
+  local k: u8 = 2
+  debug(big[k])
+  grid[k] += 10
+  debug(grid[2])
+  bump(5)
+  bump(7)
+  debug(counter)
+  debug(fib(20))
+  score = fib(24)
+  debug(score)
+  stop()
+end

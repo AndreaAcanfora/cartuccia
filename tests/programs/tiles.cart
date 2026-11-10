@@ -1,0 +1,37 @@
+-- the background map, text and numbers, read back with gettile
+gfx block = [[
+33333333
+3......3
+3.2222.3
+3.2..2.3
+3.2..2.3
+3.2222.3
+3......3
+33333333
+]]
+
+function _init()
+  text(1, 1, "HELLO")
+  num(2, 3, 4096)
+  tile(5, 5, block)
+  debug(gettile(1, 1))
+  debug(gettile(5, 1))
+  debug(gettile(2, 3))
+  debug(gettile(5, 3))
+  debug(gettile(6, 3))
+  debug(gettile(5, 5))
+  debug(gettile(33, 37))
+end
+
+function _update()
+  local f = frames()
+  if f == 3 then
+    tile(0, 0, '#')
+    debug(gettile(0, 0))
+  end
+  if f == 5 then
+    cls()
+    debug(gettile(1, 1))
+    stop()
+  end
+end

@@ -1,0 +1,45 @@
+-- 8 and 16-bit arithmetic, signed and unsigned
+function _init()
+  local a: u8 = 200
+  local b: u8 = 100
+  debug(a + b)
+  debug(a - b)
+  debug(b - a)
+  debug(a * 3)
+  debug(a / 7)
+  debug(a % 7)
+  debug(a / 0)
+  local x: i8 = -100
+  local y: i8 = 7
+  debug(x / y)
+  debug(x % y)
+  debug(x * y)
+  debug(-x)
+  debug(x >> 2)
+  local p: u16 = 50000
+  local q: u16 = 1234
+  debug(p + q)
+  debug(p - q)
+  debug(q - p)
+  debug(p * 3)
+  debug(p / q)
+  debug(p % q)
+  debug(p >> 3)
+  debug(q << 5)
+  local s: i16 = -30000
+  local t: i16 = 123
+  debug(s / t)
+  debug(s % t)
+  debug(s * t)
+  debug(s >> 4)
+  debug(~a)
+  debug(a & 0x0F | 0x30)
+  debug(a ^ b)
+  local n: u8 = 3
+  debug(a << n)
+  debug(a >> n)
+  debug(p << n)
+  debug(s >> n)
+  debug(x >> n)
+  stop()
+end

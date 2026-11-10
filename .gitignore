@@ -1,0 +1,7 @@
+target/
+*.gb
+!web/examples/*.gb
+node_modules/
+web/cartuccia.wasm
+web/mattone.wasm
+web/examples/

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>cartuccia · write a Game Boy game in your browser</title>
+  <meta name="description" content="A small Lua-flavoured language and an optimizing compiler that turns it into real Game Boy cartridges, right in your browser. Type, play, download the .gb, run it on the real thing.">
+  <meta name="theme-color" content="#14161c">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a id="brand" href="./"><img src="icon.svg" alt="" width="28" height="28"><span>cartuccia</span></a>
+    <p id="tagline">Write a Game Boy game in your browser. Play it on a real one.</p>
+    <nav aria-label="Playground">
+      <select id="examples" title="Load an example" aria-label="Examples"></select>
+      <button id="run" class="primary" title="Compile and restart (Ctrl+Enter)">▶ Run</button>
+      <label class="toggle" title="Recompile and restart as you type"><input id="live" type="checkbox" checked> live</label>
+      <label class="toggle" title="Turn the optimizer off to see what it does"><input id="optimize" type="checkbox" checked> optimize</label>
+      <button id="share" title="Copy a link to this game">🔗 Share</button>
+      <button id="download" title="Download the cartridge image">⬇ .gb</button>
+      <a class="button" href="https://github.com/AndreaAcanfora/cartuccia" title="Source code">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="code" aria-label="Editor">
+      <div id="editor">
+        <div id="gutter" aria-hidden="true"></div>
+        <div id="area">
+          <pre id="highlight" aria-hidden="true"></pre>
+          <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Game source code"></textarea>
+        </div>
+      </div>
+      <div id="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section id="side">
+      <div id="console" aria-label="Game Boy">
+        <div id="bezel">
+          <canvas id="screen" width="160" height="144" tabindex="0" aria-label="Game Boy screen: click to play"></canvas>
+          <div id="focus-hint">click to play</div>
+        </div>
+        <div id="pad" aria-label="Game Boy buttons">
+          <div id="dpad">
+            <button data-button="up" class="up" aria-label="Up"></button>
+            <button data-button="left" class="left" aria-label="Left"></button>
+            <button data-button="right" class="right" aria-label="Right"></button>
+            <button data-button="down" class="down" aria-label="Down"></button>
+          </div>
+          <div id="ab">
+            <button data-button="b" class="round" aria-label="B">B</button>
+            <button data-button="a" class="round" aria-label="A">A</button>
+          </div>
+          <div id="startselect">
+            <button data-button="select" class="pill" aria-label="Select">SELECT</button>
+            <button data-button="start" class="pill" aria-label="Start">START</button>
+          </div>
+        </div>
+        <p id="keys">Arrows · <kbd>X</kbd> A · <kbd>Z</kbd> B · <kbd>Enter</kbd> Start · <kbd>Shift</kbd> Select · <button id="sound" class="link">🔊</button></p>
+      </div>
+
+      <div id="tabs" role="tablist">
+        <button role="tab" data-tab="stats" aria-selected="true">Stats</button>
+        <button role="tab" data-tab="asm">Assembly</button>
+        <button role="tab" data-tab="ir">IR</button>
+        <button role="tab" data-tab="debug">Link port</button>
+        <button role="tab" data-tab="ref">Reference</button>
+      </div>
+      <div id="panels">
+        <div data-panel="stats" class="panel" id="stats"></div>
+        <div data-panel="asm" class="panel" hidden>
+          <p class="note">The machine code the compiler made for your game, with your source lines as comments. <label><input id="show-runtime" type="checkbox"> show the runtime library too</label></p>
+          <pre id="asm"></pre>
+        </div>
+        <div data-panel="ir" class="panel" hidden>
+          <p class="note">The intermediate representation: <label><input type="radio" name="ir" value="after" checked> after optimization</label> <label><input type="radio" name="ir" value="before"> before</label></p>
+          <pre id="ir"></pre>
+        </div>
+        <div data-panel="debug" class="panel" hidden>
+          <p class="note">What the game sends with <code>debug(x)</code>, through the link cable port.</p>
+          <pre id="serial"></pre>
+        </div>
+        <div data-panel="ref" class="panel" hidden id="ref"></div>
+      </div>
+    </section>
+  </main>
+  <div id="toast" role="status"></div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

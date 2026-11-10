@@ -1,0 +1,154 @@
+-- Snake. Arrows to steer, START to play again.
+
+gfx body = [[
+.333333.
+32222223
+32222223
+32222223
+32222223
+32222223
+32222223
+.333333.
+]]
+
+gfx apple = [[
+....3...
+...3....
+.222222.
+22211222
+22122222
+22222222
+.222222.
+..2222..
+]]
+
+gfx wall = [[
+11111111
+1.1.1.1.
+11111111
+.1.1.1.1
+11111111
+1.1.1.1.
+11111111
+.1.1.1.1
+]]
+
+const W = 20
+const H = 17
+const MAX = 255
+
+var xs: u8[256]
+var ys: u8[256]
+var head = 0
+var len = 0
+var dx = 1
+var dy = 0
+var nextdx = 1
+var nextdy = 0
+var timer = 0
+var speed = 8
+var score: u16 = 0
+var best: u16 = 0
+var alive = false
+
+function place_apple()
+  while true do
+    local ax = rnd(W - 2) + 1
+    local ay = rnd(H - 2) + 2
+    if gettile(ax, ay) == ' ' then
+      tile(ax, ay, apple)
+      return
+    end
+  end
+end
+
+function start()
+  cls()
+  for i = 0, W - 1 do
+    tile(i, 1, wall)
+    tile(i, H, wall)
+  end
+  for j = 1, H do
+    tile(0, j, wall)
+    tile(W - 1, j, wall)
+  end
+  text(0, 0, "SCORE")
+  text(11, 0, "BEST")
+  num(6, 0, 0)
+  num(16, 0, best)
+  head = 2
+  len = 3
+  for i = 0, 2 do
+    xs[i] = 4 + i
+    ys[i] = 9
+    tile(4 + i, 9, body)
+  end
+  dx = 1
+  dy = 0
+  nextdx = 1
+  nextdy = 0
+  score = 0
+  speed = 8
+  timer = 0
+  alive = true
+  place_apple()
+end
+
+function _init()
+  cls()
+  text(7, 6, "SNAKE")
+  for i = 0, 4 do tile(7 + i, 8, body) end
+  tile(13, 8, apple)
+  text(4, 12, "PRESS START")
+  best = 0
+end
+
+function step()
+  dx = nextdx
+  dy = nextdy
+  local nx = xs[head] + dx
+  local ny = ys[head] + dy
+  local hit = gettile(nx, ny)
+  if hit == wall or hit == body then
+    alive = false
+    noise(5)
+    text(5, 8, "GAME OVER")
+    text(4, 10, "PRESS START")
+    if score > best then
+      best = score
+      num(16, 0, best)
+    end
+    return
+  end
+  head += 1
+  xs[head] = nx
+  ys[head] = ny
+  tile(nx, ny, body)
+  if hit == apple then
+    len += 1
+    score += 10
+    num(6, 0, score)
+    beep(36, 1)
+    if speed > 3 and score % 50 == 0 then speed -= 1 end
+    place_apple()
+  else
+    local tail = head - len
+    tile(xs[tail], ys[tail], ' ')
+  end
+end
+
+function _update()
+  if not alive then
+    if btnp(START) then start() end
+    return
+  end
+  if btn(LEFT) and dx == 0 then nextdx = -1 nextdy = 0 end
+  if btn(RIGHT) and dx == 0 then nextdx = 1 nextdy = 0 end
+  if btn(UP) and dy == 0 then nextdx = 0 nextdy = -1 end
+  if btn(DOWN) and dy == 0 then nextdx = 0 nextdy = 1 end
+  timer += 1
+  if timer >= speed then
+    timer = 0
+    step()
+  end
+end

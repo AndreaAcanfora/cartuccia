@@ -1,0 +1,29 @@
+-- Hello, Game Boy: move the face with the arrows.
+
+gfx face = [[
+..3333..
+.3....3.
+3.3..3.3
+3......3
+3.3..3.3
+3..33..3
+.3....3.
+..3333..
+]]
+
+var x = 76
+var y = 68
+
+function _init()
+  text(3, 2, "HELLO GAME BOY!")
+  text(2, 15, "ARROWS TO MOVE")
+end
+
+function _update()
+  if btn(LEFT) and x > 8 then x -= 1 end
+  if btn(RIGHT) and x < 152 then x += 1 end
+  if btn(UP) and y > 8 then y -= 1 end
+  if btn(DOWN) and y < 136 then y += 1 end
+  if btnp(A) then beep(24, 2) end
+  spr(0, x, y, face)
+end

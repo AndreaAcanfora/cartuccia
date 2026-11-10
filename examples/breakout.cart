@@ -1,0 +1,161 @@
+-- Breakout. Left and right move the bat, A launches the ball.
+
+gfx brick = [[
+33333333
+32222221
+32222221
+32222221
+32222221
+31111111
+11111111
+........
+]]
+
+gfx wall = [[
+2.2.2.2.
+.2.2.2.2
+2.2.2.2.
+.2.2.2.2
+2.2.2.2.
+.2.2.2.2
+2.2.2.2.
+.2.2.2.2
+]]
+
+gfx bat = [[
+........
+........
+........
+33333333
+32222223
+33333333
+........
+........
+]]
+
+gfx ball = [[
+.33.....
+3113....
+3113....
+.33.....
+........
+........
+........
+........
+]]
+
+var px = 68
+var bx = 0
+var by = 0
+var dx = 1
+var dy = 1
+var stuck = true
+var over = false
+var lives = 3
+var score: u16 = 0
+var bricks = 0
+
+function draw_level()
+  cls()
+  for c = 0, 19 do tile(c, 1, wall) end
+  for r = 2, 17 do
+    tile(0, r, wall)
+    tile(19, r, wall)
+  end
+  bricks = 0
+  for r = 3, 7 do
+    for c = 1, 18 do
+      tile(c, r, brick)
+      bricks += 1
+    end
+  end
+  text(1, 0, "SCORE")
+  num(7, 0, score)
+  text(13, 0, "BALLS")
+  num(19, 0, lives)
+  stuck = true
+end
+
+function _init()
+  draw_level()
+end
+
+-- Is the cell solid? Bricks break on contact.
+function hit(cx, cy): bool
+  local t = gettile(cx, cy)
+  if t == brick then
+    tile(cx, cy, ' ')
+    score += 10
+    num(7, 0, score)
+    bricks -= 1
+    beep(36 + 7 - cy, 1)
+    return true
+  end
+  return t == wall
+end
+
+function move()
+  local nx = bx + dx
+  if hit((nx + 2) >> 3, (by + 2) >> 3) then
+    dx = -dx
+  else
+    bx = nx
+  end
+  local ny = by + dy
+  if hit((bx + 2) >> 3, (ny + 2) >> 3) then
+    dy = -dy
+  else
+    by = ny
+  end
+  -- the bat: where the ball lands decides where it goes
+  if dy == 1 and by >= 135 and by <= 138 and bx + 4 >= px and bx <= px + 24 then
+    dy = -1
+    beep(24, 1)
+    if bx + 2 < px + 8 then
+      dx = -1
+    elseif bx + 2 >= px + 16 then
+      dx = 1
+    end
+  end
+  if by > 150 and by < 200 then
+    lives -= 1
+    num(19, 0, lives)
+    noise(4)
+    stuck = true
+    if lives == 0 then
+      over = true
+      text(5, 11, "GAME OVER")
+      text(4, 13, "PRESS START")
+    end
+  end
+end
+
+function _update()
+  if over then
+    if btnp(START) then
+      over = false
+      lives = 3
+      score = 0
+      draw_level()
+    end
+    return
+  end
+  if btn(LEFT) and px > 8 then px -= 2 end
+  if btn(RIGHT) and px < 128 then px += 2 end
+  if stuck then
+    bx = px + 10
+    by = 131
+    if btnp(A) then
+      stuck = false
+      dy = -1
+    end
+  else
+    move()
+    move()
+    if bricks == 0 then draw_level() end
+  end
+  spr(0, px, 136, bat)
+  spr(1, px + 8, 136, bat)
+  spr(2, px + 16, 136, bat)
+  spr(3, bx, by, ball)
+end
