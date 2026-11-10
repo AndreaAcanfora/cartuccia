@@ -35,7 +35,6 @@ gfx wall = [[
 
 const W = 20
 const H = 17
-const MAX = 255
 
 var xs: u8[256]
 var ys: u8[256]

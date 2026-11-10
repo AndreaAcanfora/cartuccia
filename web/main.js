@@ -311,6 +311,7 @@ $("ref").innerHTML = `
 
 let romLoaded = false;
 let held = 0;
+let tapped = 0; // pressed since the last frame: a press shorter than a frame still counts
 let serialText = "";
 let audio = null;
 let muted = localStorage.getItem("cartuccia:muted") === "1";
@@ -397,7 +398,8 @@ function loop(now) {
     debt += elapsed;
     let ran = 0;
     while (debt >= FRAME_MS && ran < 4) {
-      gb.set_buttons(held);
+      gb.set_buttons(held | tapped);
+      tapped = 0;
       gb.run_frame();
       readSerial();
       debt -= FRAME_MS;
@@ -414,6 +416,7 @@ function loop(now) {
 function press(name, down) {
   const bit = BUTTONS[name];
   held = down ? held | bit : held & ~bit;
+  if (down) tapped |= bit;
   document.querySelectorAll(`[data-button="${name}"]`).forEach((b) => b.classList.toggle("held", down));
 }
 
