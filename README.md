@@ -109,7 +109,7 @@ and `spr(0, x, y, face)` loads its arguments straight from the variables:
 ## Using it
 
 **In the browser**: [the playground](https://andreaacanfora.github.io/cartuccia/) has five examples
-(Hello, Snake, Breakout, a starfield, a music box), a link-sharing button that puts the whole game
+(Hello, Snake, Breakout, a space shooter, a music box), a link-sharing button that puts the whole game
 in the URL, and a download button for the `.gb` file.
 
 **On the command line** (Rust 1.88 or newer):

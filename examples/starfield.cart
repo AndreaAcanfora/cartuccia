@@ -1,4 +1,5 @@
--- Starfield. Fly with the arrows: 24 sprites, three speeds.
+-- Starfield. Arrows fly, A or B fires, START plays again.
+-- 40 sprites: the ship, 3 shots, 6 enemies and 16 stars at three speeds.
 
 gfx ship = [[
 ...33...
@@ -9,6 +10,39 @@ gfx ship = [[
 32222223
 33.33.33
 3......3
+]]
+
+gfx enemy = [[
+3......3
+33.22.33
+.332233.
+.322223.
+33.33.33
+.3.33.3.
+3......3
+........
+]]
+
+gfx shot = [[
+...33...
+...33...
+...22...
+...22...
+...11...
+........
+........
+........
+]]
+
+gfx boom = [[
+3..3...3
+.3.3.33.
+..2.2...
+332.1233
+...2.2..
+.33.3.3.
+3...3..3
+........
 ]]
 
 gfx far = [[
@@ -33,24 +67,78 @@ gfx near = [[
 ........
 ]]
 
-const STARS = 24
+const STARS = 16
+const FOES = 6
+const SHOTS = 3
+const SHOT0 = 1
+const FOE0 = 4
+const STAR0 = 10
 
-var sx: u8[24]
-var sy: u8[24]
-var speed: u8[24]
+var sx: u8[16]
+var sy: u8[16]
+var speed: u8[16]
+
+var ex: u8[6]
+var ey: u8[6]
+var edir: u8[6]
+var ewait: u8[6]
+var eboom: u8[6]
+
+var bx: u8[3]
+var by: u8[3]
+var bon: u8[3]
+
 var shipx = 76
 var shipy = 120
+var lives = 3
+var safe = 0
+var score: u16 = 0
+var over = false
+
+-- An enemy waits a moment, then comes in from the top at a random column.
+function spawn(j)
+  ex[j] = rnd(136) + 12
+  ey[j] = 8
+  edir[j] = rnd(2)
+  ewait[j] = rnd(90) + 10
+  eboom[j] = 0
+  hide(FOE0 + j)
+end
+
+function start()
+  cls()
+  text(0, 0, "SCORE")
+  num(6, 0, 0)
+  text(13, 0, "SHIPS")
+  num(19, 0, 3)
+  score = 0
+  lives = 3
+  safe = 60
+  shipx = 76
+  shipy = 120
+  over = false
+  for j = 0, FOES - 1 do spawn(j) end
+  for k = 0, SHOTS - 1 do
+    bon[k] = 0
+    hide(SHOT0 + k)
+  end
+end
 
 function _init()
-  text(5, 1, "STARFIELD")
   for i = 0, STARS - 1 do
     sx[i] = rnd(160)
     sy[i] = rnd(144)
     speed[i] = rnd(3) + 1
   end
+  start()
 end
 
-function _update()
+-- Two 8x8 boxes overlap (with a pixel of mercy on each side).
+function touch(ax, ay, cx, cy): bool
+  return ax + 6 >= cx and cx + 6 >= ax and ay + 6 >= cy and cy + 6 >= ay
+end
+
+function stars()
   for i = 0, STARS - 1 do
     local y = sy[i] + speed[i]
     if y >= 152 then
@@ -60,11 +148,111 @@ function _update()
     sy[i] = y
     local t = far
     if speed[i] == 3 then t = near end
-    spr(i + 1, sx[i], y, t)
+    spr(STAR0 + i, sx[i], y, t)
+  end
+end
+
+function fire()
+  for k = 0, SHOTS - 1 do
+    if bon[k] == 0 then
+      bon[k] = 1
+      bx[k] = shipx
+      by[k] = shipy - 4
+      beep(48, 1)
+      return
+    end
+  end
+end
+
+function shots()
+  for k = 0, SHOTS - 1 do
+    if bon[k] == 1 then
+      if by[k] < 12 then
+        bon[k] = 0
+        hide(SHOT0 + k)
+      else
+        by[k] -= 4
+        spr(SHOT0 + k, bx[k], by[k], shot)
+      end
+    end
+  end
+end
+
+function foes()
+  -- they get faster as the score grows
+  local fast = score >= 300
+  for j = 0, FOES - 1 do
+    if eboom[j] > 0 then
+      eboom[j] -= 1
+      if eboom[j] == 0 then spawn(j) end
+    elseif ewait[j] > 0 then
+      ewait[j] -= 1
+    else
+      if fast or frames() % 2 == 0 then ey[j] += 1 end
+      if frames() % 3 == 0 then
+        if edir[j] == 0 then
+          if ex[j] <= 8 then edir[j] = 1 else ex[j] -= 1 end
+        else
+          if ex[j] >= 152 then edir[j] = 0 else ex[j] += 1 end
+        end
+      end
+      if ey[j] >= 152 then
+        spawn(j)
+      else
+        for k = 0, SHOTS - 1 do
+          if bon[k] == 1 and touch(bx[k], by[k], ex[j], ey[j]) then
+            bon[k] = 0
+            hide(SHOT0 + k)
+            eboom[j] = 12
+            score += 10
+            num(6, 0, score)
+            noise(2)
+          end
+        end
+        if eboom[j] > 0 then
+          spr(FOE0 + j, ex[j], ey[j], boom)
+        else
+          spr(FOE0 + j, ex[j], ey[j], enemy)
+          if safe == 0 and touch(shipx, shipy, ex[j], ey[j]) then hit(j) end
+        end
+      end
+    end
+  end
+end
+
+function hit(j)
+  eboom[j] = 12
+  lives -= 1
+  num(19, 0, lives)
+  noise(6)
+  safe = 90
+  if lives == 0 then
+    over = true
+    hide(0)
+    text(5, 8, "GAME OVER")
+    text(4, 10, "PRESS START")
+  end
+end
+
+function _update()
+  stars()
+  if over then
+    if btnp(START) or btnp(A) then start() end
+    return
   end
   if btn(LEFT) and shipx > 2 then shipx -= 2 end
   if btn(RIGHT) and shipx < 150 then shipx += 2 end
   if btn(UP) and shipy > 16 then shipy -= 2 end
   if btn(DOWN) and shipy < 136 then shipy += 2 end
-  spr(0, shipx, shipy, ship)
+  if btnp(A) or btnp(B) then fire() end
+  shots()
+  foes()
+  if over then return end
+  -- after a hit the ship blinks and cannot be hit again for a moment
+  if safe > 0 then safe -= 1 end
+  if safe % 8 >= 4 then
+    hide(0)
+  else
+    spr(0, shipx, shipy, ship)
+  end
 end

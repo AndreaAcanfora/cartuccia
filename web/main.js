@@ -108,6 +108,8 @@ let timer = 0;
 source.addEventListener("input", () => {
   render();
   saveDraft();
+  // edited: a reload should bring back the draft, not the example
+  if (location.hash.startsWith("#example=")) history.replaceState(null, "", location.pathname);
   clearTimeout(timer);
   timer = setTimeout(() => build($("live").checked), 350);
 });
@@ -156,10 +158,11 @@ examplesEl.innerHTML = `<option value="">Examples…</option>` +
   EXAMPLES.map((x) => `<option value="${x.file}">${x.name}</option>`).join("");
 examplesEl.addEventListener("change", async () => {
   if (!examplesEl.value) return;
-  const text = await (await fetch(`examples/${examplesEl.value}`)).text();
-  history.replaceState(null, "", location.pathname);
+  const file = examplesEl.value;
+  const text = await (await fetch(`examples/${file}`)).text();
+  history.replaceState(null, "", `${location.pathname}#example=${file.replace(/\.cart$/, "")}`);
   setSource(text);
-  examplesEl.value = "";
+  examplesEl.value = file;
   canvas.focus();
 });
 
@@ -483,7 +486,10 @@ async function fromHash() {
     }
   } else if (hash.get("example")) {
     const file = EXAMPLES.find((x) => x.file === `${hash.get("example")}.cart`)?.file;
-    if (file) return (await fetch(`examples/${file}`)).text();
+    if (file) {
+      examplesEl.value = file;
+      return (await fetch(`examples/${file}`)).text();
+    }
   }
   return null;
 }
