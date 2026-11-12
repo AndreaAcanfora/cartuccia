@@ -1,4 +1,4 @@
--- Breakout. Left and right move the bat, A launches the ball.
+-- Breakout. Left and right move the bat, A or START launches the ball.
 
 gfx brick = [[
 33333333
@@ -73,7 +73,17 @@ function draw_level()
   num(7, 0, score)
   text(13, 0, "BALLS")
   num(19, 0, lives)
+  serve()
+end
+
+-- The ball waits on the bat until a button is pressed.
+function serve()
   stuck = true
+  text(2, 11, "PRESS A OR START")
+end
+
+function launched(): bool
+  return btnp(A) or btnp(B) or btnp(START) or btnp(UP)
 end
 
 function _init()
@@ -121,18 +131,20 @@ function move()
     lives -= 1
     num(19, 0, lives)
     noise(4)
-    stuck = true
     if lives == 0 then
       over = true
+      stuck = true
       text(5, 11, "GAME OVER")
       text(4, 13, "PRESS START")
+    else
+      serve()
     end
   end
 end
 
 function _update()
   if over then
-    if btnp(START) then
+    if launched() then
       over = false
       lives = 3
       score = 0
@@ -145,9 +157,10 @@ function _update()
   if stuck then
     bx = px + 10
     by = 131
-    if btnp(A) then
+    if launched() then
       stuck = false
       dy = -1
+      text(2, 11, "                ")
     end
   else
     move()
