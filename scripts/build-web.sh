@@ -10,6 +10,17 @@ cp target/wasm32-unknown-unknown/release/cartuccia.wasm web/cartuccia.wasm
 echo "web/cartuccia.wasm: $(wc -c < web/cartuccia.wasm) bytes"
 mkdir -p web/examples
 cp examples/*.cart web/examples/
+# llms.txt: what an AI needs to write a game, also used by the playground's "Ask an AI"
+{
+  cat docs/llms-intro.md
+  sed 's/^#/##/' docs/language.md
+  for game in snake starfield; do
+    printf '\n## Example: %s\n\n```lua\n' "$game"
+    cat "examples/$game.cart"
+    printf '```\n'
+  done
+} > web/llms.txt
+echo "web/llms.txt: $(wc -c < web/llms.txt) bytes"
 if [ -n "${MATTONE_WASM:-}" ]; then
   cp "$MATTONE_WASM" web/mattone.wasm
 elif [ ! -f web/mattone.wasm ]; then
