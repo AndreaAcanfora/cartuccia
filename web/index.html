@@ -19,7 +19,14 @@
       <label class="toggle" title="Recompile and restart as you type"><input id="live" type="checkbox" checked> live</label>
       <label class="toggle" title="Turn the optimizer off to see what it does"><input id="optimize" type="checkbox" checked> optimize</label>
       <button id="share" title="Copy a link to this game">🔗 Share</button>
-      <button id="download" title="Download the cartridge image">⬇ .gb</button>
+      <div id="export-wrap">
+        <button id="export" aria-haspopup="true" aria-expanded="false" title="Take the game with you">⬇ Export ▾</button>
+        <div id="export-menu" hidden>
+          <button id="download"><b>Cartridge (.gb)</b><span>for any Game Boy emulator, or a real Game Boy with a flash cart</span></button>
+          <button id="download-html"><b>Web page (.html)</b><span>one file with the game and the emulator: plays offline on any computer</span></button>
+          <button id="play-link"><b>Play link</b><span>just the game, full screen with touch controls: open it on your phone</span></button>
+        </div>
+      </div>
       <a class="button" href="https://github.com/AndreaAcanfora/cartuccia" title="Source code">GitHub</a>
     </nav>
   </header>
@@ -41,6 +48,7 @@
         <div id="bezel">
           <canvas id="screen" width="160" height="144" tabindex="0" aria-label="Game Boy screen: click to play"></canvas>
           <div id="focus-hint">click to play</div>
+          <button id="full" title="Full screen (F)" aria-label="Full screen">⛶</button>
         </div>
         <div id="pad" aria-label="Game Boy buttons">
           <div id="dpad">
@@ -58,7 +66,7 @@
             <button data-button="start" class="pill" aria-label="Start">START</button>
           </div>
         </div>
-        <p id="keys">Arrows · <kbd>X</kbd> A · <kbd>Z</kbd> B · <kbd>Enter</kbd> Start · <kbd>Shift</kbd> Select · <button id="sound" class="link">🔊</button></p>
+        <p id="keys">Arrows · <kbd>X</kbd> A · <kbd>Z</kbd> B · <kbd>Enter</kbd> Start · <kbd>Shift</kbd> Select · <kbd>F</kbd> full screen · <button id="sound" class="link">🔊</button></p>
       </div>
 
       <div id="tabs" role="tablist">
@@ -86,6 +94,7 @@
       </div>
     </section>
   </main>
+  <button id="exit" title="Back to the code (Esc)">✕ Code</button>
   <div id="toast" role="status"></div>
   <script type="module" src="main.js"></script>
 </body>

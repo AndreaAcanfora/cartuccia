@@ -2,6 +2,7 @@
 // and the emulator (mattone.wasm, C) runs it. Both run in the page; nothing goes to a server.
 
 import { highlight } from "./editor.js";
+import { standalone } from "./export.js";
 
 const EXAMPLES = [
   { file: "hello.cart", name: "Hello, Game Boy" },
@@ -28,11 +29,12 @@ const canvas = $("screen");
 const ctx = canvas.getContext("2d");
 
 async function instantiate(url) {
-  const bytes = await (await fetch(url)).arrayBuffer();
-  return (await WebAssembly.instantiate(bytes, {})).instance.exports;
+  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+  return { bytes, exports: (await WebAssembly.instantiate(bytes, {})).instance.exports };
 }
 
-const [compiler, gb] = await Promise.all([instantiate("cartuccia.wasm"), instantiate("mattone.wasm")]);
+const [{ exports: compiler }, { exports: gb, bytes: gbWasm }] =
+  await Promise.all([instantiate("cartuccia.wasm"), instantiate("mattone.wasm")]);
 
 // ---------- compiling ----------
 
@@ -190,13 +192,57 @@ $("share").addEventListener("click", async () => {
   }
 });
 
+const exportBtn = $("export");
+const exportMenu = $("export-menu");
+function showExport(on) {
+  exportMenu.hidden = !on;
+  exportBtn.setAttribute("aria-expanded", String(on));
+}
+exportBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  showExport(exportMenu.hidden);
+});
+addEventListener("click", (e) => {
+  if (!exportMenu.hidden && !exportMenu.contains(e.target)) showExport(false);
+});
+exportMenu.addEventListener("click", () => showExport(false));
+
+function save(bytes, name, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([bytes], { type }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+const fileName = () => result.title.toLowerCase().replace(/ +/g, "-") || "game";
+
+$("download-html").addEventListener("click", () => {
+  if (!result) return toast("Fix the errors first");
+  save(standalone(result.title, result.rom, gbWasm), `${fileName()}.html`, "text/html");
+  toast("Saved: double-click it to play, no internet needed");
+});
+
+$("play-link").addEventListener("click", async () => {
+  const url = `${location.origin}${location.pathname}?play#code=${await pack(source.value)}`;
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try {
+      return await navigator.share({ title: result?.title ?? "cartuccia", url });
+    } catch {
+      // cancelled: fall back to the clipboard
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast("Play link copied: send it to your phone");
+  } catch {
+    prompt("The play link:", url);
+  }
+});
+
 $("download").addEventListener("click", () => {
   if (!result) return toast("Fix the errors first");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([result.rom], { type: "application/octet-stream" }));
-  a.download = `${result.title.toLowerCase().replace(/ +/g, "-") || "game"}.gb`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  save(result.rom, `${fileName()}.gb`, "application/octet-stream");
   toast("Saved: it runs in any Game Boy emulator, or on a real Game Boy with a flash cartridge");
 });
 
@@ -423,8 +469,31 @@ function press(name, down) {
   document.querySelectorAll(`[data-button="${name}"]`).forEach((b) => b.classList.toggle("held", down));
 }
 
+// ---------- full screen ----------
+
+// Play mode hides everything but the game. It uses the browser's full screen where there is
+// one (not on iPhones), and the page alone otherwise.
+function setPlay(on) {
+  document.body.classList.toggle("play", on);
+  if (on) {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+    canvas.focus();
+  } else {
+    if (document.fullscreenElement) document.exitFullscreen();
+    if (location.search) history.replaceState(null, "", location.pathname + location.hash);
+  }
+}
+$("full").addEventListener("click", () => setPlay(true));
+$("exit").addEventListener("click", () => setPlay(false));
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && document.body.classList.contains("play")) setPlay(false);
+});
+if (new URLSearchParams(location.search).has("play")) document.body.classList.add("play");
+
 // The keyboard plays only while the screen has focus, so typing never moves the game.
 canvas.addEventListener("keydown", (e) => {
+  if (e.code === "KeyF" && !e.ctrlKey && !e.metaKey) return setPlay(!document.body.classList.contains("play"));
+  if (e.code === "Escape" && document.body.classList.contains("play")) return setPlay(false);
   const name = KEYS[e.code];
   if (name) {
     e.preventDefault();
