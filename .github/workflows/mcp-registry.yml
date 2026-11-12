@@ -1,0 +1,41 @@
+name: MCP Registry
+
+# Lists cartuccia-mcp in the official MCP Registry, after the npm package of the same version
+# is published. Ownership: GitHub OIDC (io.github.AndreaAcanfora) and mcpName in package.json.
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v4
+      - name: The npm package must exist at this version
+        run: |
+          v="$(jq -r .version package.json)"
+          test "$(jq -r .version server.json)" = "$v"
+          npm view "cartuccia-mcp@$v" mcpName | grep -qx 'io.github.AndreaAcanfora/cartuccia'
+      - uses: sigstore/cosign-installer@v3
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
