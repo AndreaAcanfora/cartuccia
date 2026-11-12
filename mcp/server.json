@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.AndreaAcanfora/cartuccia",
+  "title": "cartuccia: Game Boy games",
+  "description": "Write, run and playtest Game Boy games: compiler, emulator, screenshots, .gb and .html export.",
+  "repository": {
+    "url": "https://github.com/AndreaAcanfora/cartuccia",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "websiteUrl": "https://github.com/AndreaAcanfora/cartuccia/tree/master/mcp",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "cartuccia-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
