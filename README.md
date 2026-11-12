@@ -110,7 +110,12 @@ and `spr(0, x, y, face)` loads its arguments straight from the variables:
 
 **In the browser**: [the playground](https://andreaacanfora.github.io/cartuccia/) has five examples
 (Hello, Snake, Breakout, a space shooter, a music box), a link-sharing button that puts the whole game
-in the URL, and a download button for the `.gb` file.
+in the URL, full screen (⛶ or `F`), and an Export menu:
+
+- **Cartridge (.gb)**: for any Game Boy emulator, or a real Game Boy with a flash cartridge.
+- **Web page (.html)**: one file, about 90 KB, with your game and the emulator inside. It plays
+  offline on any computer: double-click it.
+- **Play link**: just the game, full screen, with touch controls. Open it on your phone.
 
 **On the command line** (Rust 1.88 or newer):
 
