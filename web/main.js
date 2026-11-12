@@ -10,6 +10,7 @@ const EXAMPLES = [
   { file: "breakout.cart", name: "Breakout" },
   { file: "starfield.cart", name: "Starfield" },
   { file: "music.cart", name: "Music box" },
+  { file: "frog.cart", name: "Frog Road (made by Claude)" },
 ];
 const FRAME_MS = 1000 / 59.7275;
 const BUTTONS = { right: 1, left: 2, up: 4, down: 8, a: 16, b: 32, select: 64, start: 128 };

@@ -109,7 +109,7 @@ and `spr(0, x, y, face)` loads its arguments straight from the variables:
 ## Using it
 
 **In the browser**: [the playground](https://andreaacanfora.github.io/cartuccia/) has five examples
-(Hello, Snake, Breakout, a space shooter, a music box), a link-sharing button that puts the whole game
+(Hello, Snake, Breakout, a space shooter, a music box, and Frog Road, written by Claude), a link-sharing button that puts the whole game
 in the URL, full screen (⛶ or `F`), and an Export menu:
 
 - **Cartridge (.gb)**: for any Game Boy emulator, or a real Game Boy with a flash cartridge.
@@ -121,6 +121,15 @@ in the URL, full screen (⛶ or `F`), and an Export menu:
 chatbot, with the whole language in it; paste the answer back and play. The same material is at
 [llms.txt](https://andreaacanfora.github.io/cartuccia/llms.txt): the rules that trip people (and
 models) up, the full reference and two complete games, about 16 KB.
+
+**From Claude Code, Claude Desktop or Cursor**: [cartuccia-mcp](mcp/) is an MCP server that gives
+an agent the compiler and a Game Boy. It writes the game, runs it with scripted button presses,
+looks at the screenshots, plays it, fixes what is wrong and exports it. The *Frog Road* example
+was made that way, from one prompt.
+
+```sh
+claude mcp add cartuccia -- npx -y cartuccia-mcp
+```
 
 **On the command line** (Rust 1.88 or newer):
 

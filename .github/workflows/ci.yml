@@ -76,6 +76,15 @@ jobs:
           "
       - name: Every example compiles and runs in the two modules
         run: node tests/wasm-smoke.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The MCP server, through a real MCP client
+        working-directory: mcp
+        run: |
+          npm ci
+          npm run assets
+          npm test
       - uses: actions/upload-artifact@v4
         with:
           name: web
