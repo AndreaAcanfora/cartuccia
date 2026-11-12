@@ -252,6 +252,53 @@ $("run").addEventListener("click", () => {
 });
 $("optimize").addEventListener("change", () => build(true));
 
+// ---------- ask an AI ----------
+
+// The prompt is llms.txt (rules, reference, two games) plus the player's idea, and the current
+// code with its error when they want it changed or fixed.
+const ai = $("ai");
+let llms = null;
+
+$("ask-ai").addEventListener("click", () => {
+  if (statusEl.className === "error") $("ai-current").checked = true;
+  ai.showModal();
+});
+
+$("ai-copy").addEventListener("click", async () => {
+  llms ??= await (await fetch("llms.txt")).text();
+  const idea = $("ai-idea").value.trim();
+  let ask;
+  if ($("ai-current").checked) {
+    ask = `Here is my cartuccia game. ${idea || "Make it better and more fun."}\n\n\`\`\`lua\n${source.value.trimEnd()}\n\`\`\`\n`;
+    if (statusEl.className === "error") ask += `\nIt does not compile:\n\n${statusEl.textContent}\n`;
+  } else {
+    ask = `Write a cartuccia game: ${idea || "a small, fun arcade game of your choice."}\n`;
+  }
+  const prompt = `${llms}\n---\n\n${ask}`;
+  try {
+    await navigator.clipboard.writeText(prompt);
+    toast("Prompt copied: paste it into Claude, ChatGPT or another AI");
+  } catch {
+    $("ai-answer").value = prompt;
+    $("ai-answer").select();
+    toast("Copy the prompt from the box below");
+  }
+});
+
+$("ai-load").addEventListener("click", () => {
+  const answer = $("ai-answer").value;
+  const blocks = [...answer.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1]);
+  const code = (blocks.sort((a, b) => b.length - a.length)[0] ?? answer).trim();
+  if (!code) return toast("Paste the answer first");
+  history.replaceState(null, "", location.pathname);
+  examplesEl.value = "";
+  setSource(code + "\n");
+  saveDraft();
+  $("ai-answer").value = "";
+  ai.close();
+  canvas.focus();
+});
+
 // ---------- panels ----------
 
 const tabs = document.querySelectorAll("#tabs button");

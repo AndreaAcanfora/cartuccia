@@ -117,6 +117,11 @@ in the URL, full screen (⛶ or `F`), and an Export menu:
   offline on any computer: double-click it.
 - **Play link**: just the game, full screen, with touch controls. Open it on your phone.
 
+**With an AI**: ✨ Ask an AI turns a one-line idea into a prompt for Claude, ChatGPT or any other
+chatbot, with the whole language in it; paste the answer back and play. The same material is at
+[llms.txt](https://andreaacanfora.github.io/cartuccia/llms.txt): the rules that trip people (and
+models) up, the full reference and two complete games, about 16 KB.
+
 **On the command line** (Rust 1.88 or newer):
 
 ```sh

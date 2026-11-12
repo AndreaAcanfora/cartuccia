@@ -18,6 +18,7 @@
       <button id="run" class="primary" title="Compile and restart (Ctrl+Enter)">▶ Run</button>
       <label class="toggle" title="Recompile and restart as you type"><input id="live" type="checkbox" checked> live</label>
       <label class="toggle" title="Turn the optimizer off to see what it does"><input id="optimize" type="checkbox" checked> optimize</label>
+      <button id="ask-ai" title="Have Claude, ChatGPT or another AI write a game for you">✨ Ask an AI</button>
       <button id="share" title="Copy a link to this game">🔗 Share</button>
       <div id="export-wrap">
         <button id="export" aria-haspopup="true" aria-expanded="false" title="Take the game with you">⬇ Export ▾</button>
@@ -94,6 +95,26 @@
       </div>
     </section>
   </main>
+  <dialog id="ai" aria-labelledby="ai-title">
+    <form method="dialog">
+      <h2 id="ai-title">Make a game with an AI</h2>
+      <p class="step"><b>1.</b> Describe your game. You get a prompt with the whole language in it, for
+        Claude, ChatGPT or any other chatbot.</p>
+      <textarea id="ai-idea" rows="3" placeholder="A frog crosses a road full of cars. Three lives, and the cars get faster at every level."></textarea>
+      <label class="check"><input type="checkbox" id="ai-current"> change the game in the editor instead of starting a new one</label>
+      <div class="row">
+        <button type="button" id="ai-copy" class="primary">Copy the prompt</button>
+        <a href="llms.txt" target="_blank">llms.txt</a>
+      </div>
+      <p class="step"><b>2.</b> Paste the AI's answer here: the whole reply is fine, the code is picked out of it.
+        If it does not compile, tick the box above and ask again: the error goes into the prompt.</p>
+      <textarea id="ai-answer" rows="4" placeholder="```lua&#10;-- Frogger. Arrows hop, START restarts.&#10;..."></textarea>
+      <div class="row">
+        <button type="button" id="ai-load" class="primary">Play it</button>
+        <button value="close">Close</button>
+      </div>
+    </form>
+  </dialog>
   <button id="exit" title="Back to the code (Esc)">✕ Code</button>
   <div id="toast" role="status"></div>
   <script type="module" src="main.js"></script>

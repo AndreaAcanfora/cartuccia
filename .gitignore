@@ -5,3 +5,4 @@ node_modules/
 web/cartuccia.wasm
 web/mattone.wasm
 web/examples/
+web/llms.txt

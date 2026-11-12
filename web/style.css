@@ -643,3 +643,35 @@ body.play #exit {
   body.play #bezel { grid-area: bezel; }
   body.play #screen { width: auto; height: min(calc(100dvh - 24px), calc((100vw - 340px) * 9 / 10)); }
 }
+
+/* ---------- ask an AI ---------- */
+
+#ai {
+  width: min(560px, calc(100vw - 32px));
+  padding: 18px 20px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+#ai::backdrop { background: rgb(0 0 0 / 0.5); }
+#ai h2 { margin: 0 0 10px; font-size: 18px; }
+#ai .step { margin: 14px 0 6px; color: var(--muted); }
+#ai .step b { color: var(--text); }
+
+#ai textarea {
+  box-sizing: border-box;
+  width: 100%;
+  font: 13px var(--mono);
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px;
+  resize: vertical;
+}
+
+#ai .check { display: flex; gap: 6px; align-items: center; margin: 6px 0; color: var(--muted); font-size: 13.5px; }
+#ai .row { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+#ai a { color: var(--accent); font-size: 13.5px; }
