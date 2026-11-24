@@ -52,13 +52,13 @@ opens, and that a flash cartridge carries to a Game Boy.
   ```text
   game.cart:5:7: error: `x` and the value assigned to it: one is u8, the other is u16
      5 |   x = score
-       |       ^^^^^
+       |      ^^^^^
   game.cart:1:8: note: `x` is declared u8
      1 | var x: u8 = 1
        |        ^^
   game.cart:4:13: note: num() takes u16 as its value
      4 |   num(0, 0, score)
-       |             ^^^^^
+           |            ^^^^^
   note: convert one of them, like u16(x), or declare it with a type, like `local x: u16`
   ```
 
@@ -108,7 +108,7 @@ and `spr(0, x, y, face)` loads its arguments straight from the variables:
 
 ## Using it
 
-**In the browser**: [the playground](https://andreaacanfora.github.io/cartuccia/) has five examples
+**In the browser**: [the playground](https://andreaacanfora.github.io/cartuccia/) has six examples
 (Hello, Snake, Breakout, a space shooter, a music box, and Frog Road, written by Claude), a link-sharing button that puts the whole game
 in the URL, full screen (⛶ or `F`), and an Export menu:
 
